@@ -12,7 +12,9 @@ app.listen(PORT, () => console.log(`🌐 Server aktif di port ${PORT}`));
 
 // Inisialisasi Client WhatsApp
 const client = new Client({
-  authStrategy: new LocalAuth({ dataPath: "./session" }),
+  authStrategy: new LocalAuth({
+    dataPath: "/mnt/wa-bot-session", // <— pakai volume Railway
+  }),
   puppeteer: {
     headless: true,
     executablePath:
@@ -136,3 +138,5 @@ client.on("message", async (msg) => {
 });
 
 client.initialize();
+// 🟢 Pastikan proses tetap hidup
+setInterval(() => {}, 1000);
