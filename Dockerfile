@@ -1,26 +1,23 @@
-# Gunakan base image dengan Puppeteer + Chromium
+# ✅ Gunakan image resmi Puppeteer yang sudah lengkap dengan Chromium
 FROM ghcr.io/puppeteer/puppeteer:22.9.0
 
 WORKDIR /app
 
-# Jalankan sebagai root dulu biar bisa install tanpa masalah
+# Gunakan root agar bisa install dan ubah permission
 USER root
 
-# Copy dependency
 COPY package*.json ./
-
-# Perbaiki permission dan install dependencies
 RUN chmod -R 777 /app && npm install
 
-# Copy seluruh source code
 COPY . .
 
-# Pastikan environment Puppeteer benar
+# ✅ Pastikan Puppeteer tidak download ulang Chromium (karena sudah include)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
 
-# Jalankan sebagai user aman bawaan Puppeteer
+EXPOSE 8080
+
+# Kembali ke user aman bawaan Puppeteer
 USER pptruser
 
-EXPOSE 3001
 CMD ["npm", "start"]
