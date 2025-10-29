@@ -1,19 +1,27 @@
 require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
 const axios = require("axios");
 const express = require("express");
 const qrcode = require("qrcode-terminal");
 const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 app.get("/", (_, res) => res.send("🤖 WA Bot Server is running"));
 app.listen(PORT, () => console.log(`🌐 Server aktif di port ${PORT}`));
 
-// Inisialisasi Client WhatsApp
+// 🔹 Load session kalau ada
+const sessionFile = path.join(__dirname, "session", "session.json");
+if (fs.existsSync(sessionFile)) {
+  console.log("🔁 Memuat session dari file lokal...");
+}
+
+// 🔹 Inisialisasi WhatsApp Client
 const client = new Client({
   authStrategy: new LocalAuth({
-    dataPath: "./session", // disimpan di folder project bot
+    dataPath: "./session", // folder session
   }),
   puppeteer: {
     headless: true,
@@ -32,23 +40,26 @@ const client = new Client({
   },
 });
 
-// QR dan event dasar
-client.on("qr", (qr) => qrcode.generate(qr, { small: true }));
-client.on("ready", () => console.log("✅ Bot WhatsApp siap digunakan!"));
-client.on("disconnected", (reason) => {
-  console.log("⚠️ Terputus:", reason);
-  client.initialize(); // auto reconnect
+// 🔹 Simpan session saat berhasil login
+client.on("authenticated", (session) => {
+  const filePath = path.join(__dirname, "session", "session.json");
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(session));
+  console.log("💾 Session tersimpan di file session/session.json");
 });
 
-// Simpan session user sementara
+// QR & Ready Events
+client.on("qr", (qr) => qrcode.generate(qr, { small: true }));
+client.on("ready", () => console.log("✅ Bot WhatsApp siap digunakan!"));
+
+// 🧠 Memory sementara per user
 const sessions = {};
 
-// Handler pesan masuk
 client.on("message", async (msg) => {
   const from = msg.from;
   const text = msg.body.trim();
 
-  // STEP 1: Data pelanggan
+  // Step 1: Data pelanggan
   if (
     text.toLowerCase().includes("nama") &&
     text.toLowerCase().includes("alamat") &&
@@ -72,12 +83,12 @@ client.on("message", async (msg) => {
     };
 
     await msg.reply(
-      "✅ Data pelanggan disimpan.\nSekarang kirim data Barang1 dengan format:\n\nBarang1\nNama : [nama barang]\nQty : [jumlah]\nHarga : [harga]"
+      "✅ Data pelanggan disimpan.\nSekarang kirim data Barang1:\n\nBarang1\nNama : [nama barang]\nQty : [jumlah]\nHarga : [harga]"
     );
     return;
   }
 
-  // STEP 2: Barang
+  // Step 2: Barang
   if (text.toLowerCase().startsWith("barang")) {
     const session = sessions[from];
     if (!session) {
@@ -99,7 +110,7 @@ client.on("message", async (msg) => {
     return;
   }
 
-  // STEP 3: Selesai input
+  // Step 3: Selesai input
   if (text.toLowerCase() === "tidak") {
     const session = sessions[from];
     if (!session) {
@@ -137,20 +148,7 @@ client.on("message", async (msg) => {
   }
 });
 
-const sessionFile = path.join(__dirname, "session", "session.json");
-if (fs.existsSync(sessionFile)) {
-  console.log("🔁 Memuat session dari file lokal...");
-}
 client.initialize();
-const fs = require("fs");
-const path = require("path");
 
-client.on("authenticated", (session) => {
-  const filePath = path.join(__dirname, "session", "session.json");
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(session));
-  console.log("💾 Session tersimpan di file session/session.json");
-});
-
-// 🟢 Pastikan proses tetap hidup
+// 🟢 Biar Railway gak matiin bot
 setInterval(() => {}, 1000);
