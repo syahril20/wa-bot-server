@@ -13,7 +13,7 @@ app.listen(PORT, () => console.log(`🌐 Server aktif di port ${PORT}`));
 // Inisialisasi Client WhatsApp
 const client = new Client({
   authStrategy: new LocalAuth({
-    dataPath: "/mnt/wa-bot-session", // <— pakai volume Railway
+    dataPath: "./session", // disimpan di folder project bot
   }),
   puppeteer: {
     headless: true,
@@ -137,6 +137,20 @@ client.on("message", async (msg) => {
   }
 });
 
+const sessionFile = path.join(__dirname, "session", "session.json");
+if (fs.existsSync(sessionFile)) {
+  console.log("🔁 Memuat session dari file lokal...");
+}
 client.initialize();
+const fs = require("fs");
+const path = require("path");
+
+client.on("authenticated", (session) => {
+  const filePath = path.join(__dirname, "session", "session.json");
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(session));
+  console.log("💾 Session tersimpan di file session/session.json");
+});
+
 // 🟢 Pastikan proses tetap hidup
 setInterval(() => {}, 1000);
