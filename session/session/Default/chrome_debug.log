@@ -1,0 +1,24 @@
+[1030/011213.512:INFO:CONSOLE(113)] "Event handler of 'x-storagemutated-1' event must be added on the initial evaluation of worker script.", source: https://static.whatsapp.net/rsrc.php/v4/yr/r/TKIE-pGYtMd.js (113)
+[1030/011213.608:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Feature xr-spatial-tracking's parameters are ignored.", source:  (0)
+[1030/011213.608:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Origin trial controlled feature not enabled: 'attribution-reporting'.", source:  (0)
+[1030/011213.608:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'compute-pressure'.", source:  (0)
+[1030/011213.610:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Origin trial controlled feature not enabled: 'interest-cohort'.", source:  (0)
+[1030/011213.610:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'private-state-token-issuance'.", source:  (0)
+[1030/011213.610:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Origin trial controlled feature not enabled: 'shared-storage'.", source:  (0)
+[1030/011213.610:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'shared-storage-select-url'.", source:  (0)
+[1030/011213.610:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'private-state-token-redemption'.", source:  (0)
+[1030/011213.610:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'unload'.", source:  (0)
+[1030/011213.610:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'window-management'.", source:  (0)
+[1030/011213.611:INFO:CONSOLE(0)] "Document-Policy HTTP header: Unrecognized document policy feature name include-js-call-stacks-in-crash-reports.", source: https://web.whatsapp.com/ (0)
+[1030/011213.669:ERROR:entry_impl.cc(1072)] No file for 800000ea
+[1030/011213.670:ERROR:entry_impl.cc(1072)] No file for 800000ec
+[1030/011213.672:ERROR:entry_impl.cc(1072)] No file for 800000ed
+[1030/011213.672:ERROR:entry_impl.cc(1072)] No file for 800000ee
+[1030/011213.673:ERROR:entry_impl.cc(1072)] No file for 800000eb
+[1030/011213.673:ERROR:entry_impl.cc(1072)] No file for 800000f3
+[1030/011213.675:ERROR:entry_impl.cc(1072)] No file for 800000f2
+[1030/011213.675:ERROR:entry_impl.cc(1072)] No file for 800000f0
+[1030/011213.675:ERROR:entry_impl.cc(1072)] No file for 800000ef
+[1030/011213.675:ERROR:entry_impl.cc(1072)] No file for 800000f1
+[1030/011215.542:ERROR:entry_impl.cc(1072)] No file for 800000ff
+[1030/011217.015:INFO:CONSOLE(0)] "The resource https://static.whatsapp.net/rsrc.php/v5/yF/l/0,cross/5auWPyR5Glrm4LZIOCaXCR.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.", source: https://web.whatsapp.com/ (0)
