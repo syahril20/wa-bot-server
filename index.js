@@ -1,32 +1,15 @@
-require("dotenv").config();
-const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
-const express = require("express");
-const qrcode = require("qrcode-terminal");
 const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
+const qrcode = require("qrcode-terminal");
 
-const app = express();
-const PORT = process.env.PORT || 8080;
+const path = require("path");
+const { executablePath } = require("puppeteer");
 
-app.get("/", (_, res) => res.send("🤖 WA Bot Server is running"));
-app.listen(PORT, () => console.log(`🌐 Server aktif di port ${PORT}`));
-
-// 🔹 Load session kalau ada
-const sessionFile = path.join(__dirname, "session", "session.json");
-if (fs.existsSync(sessionFile)) {
-  console.log("🔁 Memuat session dari file lokal...");
-}
-
-// 🔹 Inisialisasi WhatsApp Client
 const client = new Client({
-  authStrategy: new LocalAuth({
-    dataPath: "./session", // folder session
-  }),
+  authStrategy: new LocalAuth({ dataPath: "./session" }),
   puppeteer: {
     headless: true,
-    executablePath:
-      process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/google-chrome",
+    executablePath: executablePath(), // 🟢 gunakan Chromium lokal bawaan puppeteer
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -40,26 +23,22 @@ const client = new Client({
   },
 });
 
-// 🔹 Simpan session saat berhasil login
-client.on("authenticated", (session) => {
-  const filePath = path.join(__dirname, "session", "session.json");
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(session));
-  console.log("💾 Session tersimpan di file session/session.json");
+client.on("qr", (qr) => {
+  console.log(
+    "📱 Scan QR Code di bawah ini pakai WhatsApp (Perangkat Tertaut):"
+  );
+  qrcode.generate(qr, { small: true }); // tampilkan QR di terminal
 });
-
-// QR & Ready Events
-client.on("qr", (qr) => qrcode.generate(qr, { small: true }));
 client.on("ready", () => console.log("✅ Bot WhatsApp siap digunakan!"));
 
 // 🧠 Memory sementara per user
-const sessions = {};
+const sessions = {}; // { nomor_wa: { step, data } }
 
 client.on("message", async (msg) => {
   const from = msg.from;
   const text = msg.body.trim();
 
-  // Step 1: Data pelanggan
+  // 📌 Step 1 — input data pelanggan
   if (
     text.toLowerCase().includes("nama") &&
     text.toLowerCase().includes("alamat") &&
@@ -83,15 +62,15 @@ client.on("message", async (msg) => {
     };
 
     await msg.reply(
-      "✅ Data pelanggan disimpan.\nSekarang kirim data Barang1:\n\nBarang1\nNama : [nama barang]\nQty : [jumlah]\nHarga : [harga]"
+      "✅ Data pelanggan disimpan.\nSekarang kirim data Barang1 dengan format:\n\nBarang1\nNama : [nama barang]\nQty : [jumlah]\nHarga : [harga]"
     );
     return;
   }
 
-  // Step 2: Barang
+  // 📌 Step 2 — input barang
   if (text.toLowerCase().startsWith("barang")) {
     const session = sessions[from];
-    if (!session) {
+    if (!session || session.step !== "barang") {
       await msg.reply("⚠️ Kirim dulu data pelanggan (nama, alamat, telepon).");
       return;
     }
@@ -105,12 +84,12 @@ client.on("message", async (msg) => {
 
     session.data.barang.push(barang);
     await msg.reply(
-      "🛒 Barang disimpan.\nKetik *Barang2* jika ada tambahan, atau *tidak* jika sudah selesai."
+      "🛒 Barang disimpan.\nKetik *Barang1* jika ada tambahan, atau ketik *tidak* jika sudah selesai."
     );
     return;
   }
 
-  // Step 3: Selesai input
+  // 📌 Step 3 — jika user ketik “tidak”
   if (text.toLowerCase() === "tidak") {
     const session = sessions[from];
     if (!session) {
@@ -121,16 +100,19 @@ client.on("message", async (msg) => {
     await msg.reply("💾 Menyimpan data ke server...");
 
     try {
-      const baseUrl = process.env.NEXT_API_BASE_URL;
-      const saveUrl = `${baseUrl}/api/save-transaksi`;
-      const notaUrl = `${baseUrl}/api/generate-nota`;
-
-      const response = await axios.post(saveUrl, session.data);
+      const response = await axios.post(
+        "http://localhost:3000/api/save-transaksi",
+        session.data
+      );
       const nota_no = response.data.nota_no;
 
       await msg.reply("✅ Transaksi tersimpan! Membuat nota...");
 
-      const notaRes = await axios.post(notaUrl, { nota_no });
+      // 🔹 Generate nota dari Next.js
+      const notaRes = await axios.post(
+        "http://localhost:3000/api/generate-nota",
+        { nota_no }
+      );
       const base64 = notaRes.data.base64;
       const media = new MessageMedia("image/png", base64, "nota.png");
 
@@ -141,14 +123,12 @@ client.on("message", async (msg) => {
     } catch (err) {
       console.error("❌ Gagal simpan data:", err.message);
       await msg.reply(
-        "❌ Terjadi kesalahan saat menyimpan data ke server. Coba lagi nanti."
+        "❌ Terjadi kesalahan saat menyimpan data, coba lagi nanti."
       );
     }
     return;
   }
 });
 
+// 🟢 WAJIB: inisialisasi client biar bot mulai jalan
 client.initialize();
-
-// 🟢 Biar Railway gak matiin bot
-setInterval(() => {}, 1000);
